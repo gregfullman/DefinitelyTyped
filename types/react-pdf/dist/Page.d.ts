@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { PDFPageProxy } from 'pdfjs-dist';
 
 export type RenderFunction = () => JSX.Element;
 
@@ -32,7 +33,7 @@ export interface TextItem {
     dir: string;
     transform: number[];
     width: number;
-    height:	number;
+    height: number;
     fontName: string;
 }
 
@@ -94,7 +95,7 @@ export interface Props {
     /**
      * Function called when the page is successfully loaded.
      */
-    onLoadSuccess?: (pdf: any) => void;
+    onLoadSuccess?: (page: PDFPageProxy) => void;
 
     /**
      * Function called in case of an error while rendering the page.

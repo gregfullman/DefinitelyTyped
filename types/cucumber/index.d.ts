@@ -1,4 +1,4 @@
-// Type definitions for cucumber-js 4.0
+// Type definitions for cucumber-js 6.0
 // Project: http://github.com/cucumber/cucumber-js
 // Definitions by: Abraão Alves <https://github.com/abraaoalves>
 //                 Jan Molak <https://github.com/jan-molak>
@@ -6,6 +6,9 @@
 //                 BendingBender <https://github.com/BendingBender>
 //                 ErikSchierboom <https://github.com/ErikSchierboom>
 //                 Peter Morlion <https://github.com/petermorlion>
+//                 Don Jayamanne <https://github.com/DonJayamanne>
+//                 David Goss <https://github.com/davidjgoss>
+//                 Alberto Silva <https://github.com/albertossilva>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.4
 
@@ -27,7 +30,7 @@ export interface CallbackStepDefinition {
     (error?: any, pending?: string): void;
 }
 
-export interface TableDefinition {
+export interface TableDefinition<Type = any> {
     /** Returns the table as a 2-D array. */
     raw(): string[][];
 
@@ -35,16 +38,17 @@ export interface TableDefinition {
     rows(): string[][];
 
     /** Returns an object where each row corresponds to an entry (first column is the key, second column is the value). */
-    rowsHash(): { [firstCol: string]: string };
+    rowsHash(): { [firstColumn: string]: string };
 
     /** Returns an array of objects where each row is converted to an object (column header is the key). */
-    hashes(): Array<{ [colName: string]: string }>;
+    hashes(): Array<{ [columnName in keyof Type]: string }>;
 }
 
 export type StepDefinitionCode = (this: World, ...stepArgs: any[]) => any;
 
 export interface StepDefinitionOptions {
     timeout?: number;
+    wrapperOptions?: {[key: string]: any};
 }
 
 export interface StepDefinitions {
@@ -73,7 +77,7 @@ export function defineStep(pattern: RegExp | string, options: StepDefinitionOpti
 export function Given(pattern: RegExp | string, code: StepDefinitionCode): void;
 export function Given(pattern: RegExp | string, options: StepDefinitionOptions, code: StepDefinitionCode): void;
 export function setDefaultTimeout(time: number): void;
-export function setDefinitionFunctionWrapper(fn: () => void, options?: {[key: string]: any}): void;
+export function setDefinitionFunctionWrapper(fn: ((fn: () => void) => (...args: any[]) => any) | ((fn: () => void, options?: {[key: string]: any}) => (...args: any[]) => any)): void;
 // tslint:disable-next-line ban-types
 export function setWorldConstructor(world: ((this: World, init: {attach: Function, parameters: {[key: string]: any}}) => void) | {}): void;
 export function Then(pattern: RegExp | string, options: StepDefinitionOptions, code: StepDefinitionCode): void;
@@ -95,6 +99,7 @@ export interface SourceLocation {
 export interface ScenarioResult {
     duration: number;
     status: Status;
+    exception?: Error;
 }
 
 export namespace pickle {
@@ -251,8 +256,10 @@ export namespace events {
 }
 
 export interface StepDefinition {
-    // tslint:disable-next-line ban-types
+    // tslint:disable:ban-types
     code: Function;
+    unwrappedCode?: Function;
+    // tslint:enable:ban-types
     line: number;
     options: {};
     pattern: any;
